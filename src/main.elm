@@ -34,16 +34,15 @@ model =
 
 
 type Msg
-    = Show
+    = Show String
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        Show ->
+        Show entry ->
             { model
-                | displayed = "test"
-
+                | displayed = entry 
                 --| displayed = model.entries
             }
 
@@ -55,14 +54,16 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ ul [ onClick Show ] (List.map viewEntry model.entries)
+        [ ul [] (List.map viewEntry model.entries)
         , text model.displayed
         ]
 
 
 viewEntry : List String -> Html Msg
 viewEntry entry =
-    li []
+    li [ onClick (Show (case List.head entry of
+                            Nothing -> ""
+                            Just val -> val)) ]
         [ text
             (case List.head entry of
                 Nothing ->
