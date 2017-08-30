@@ -14,7 +14,7 @@ main =
 
 
 type alias Model =
-    { entries : List (List String)
+    { entries : List (String, String)
     , displayed : String
     }
 
@@ -22,10 +22,10 @@ type alias Model =
 model : Model
 model =
     { entries =
-        [ [ "a", "b" ]
-        , [ "c", "d" ]
+        [ ( "a", "b" )
+        , ( "c", "d" )
         ]
-    , displayed = ""
+        , displayed = ""
     }
 
 
@@ -59,17 +59,7 @@ view model =
         ]
 
 
-viewEntry : List String -> Html Msg
+viewEntry : (String, String) -> Html Msg
 viewEntry entry =
-    li [ onClick (Show (case List.head entry of
-                            Nothing -> ""
-                            Just val -> val)) ]
-        [ text
-            (case List.head entry of
-                Nothing ->
-                    "oh no"
-
-                Just val ->
-                    val
-            )
-        ]
+    li [ onClick (Show (Tuple.second entry)) ]
+        [ text (Tuple.first entry) ]
