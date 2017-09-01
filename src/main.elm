@@ -96,8 +96,9 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ ul [] (List.map viewEntry model.entries)
-        , text model.displayed
+        [ Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "style.css" ] []
+        , ul [ id "entries" ] (List.map viewEntry model.entries)
+        , div [ id "displayed" ] [ text model.displayed ]
         ]
 
 

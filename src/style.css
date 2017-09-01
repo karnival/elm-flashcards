@@ -1,0 +1,11 @@
+#entries {
+    float: left;
+    max-width: 5em;
+}
+
+#displayed {
+    text-align: center;
+    position: fixed;
+    left: 20em;
+    top: 50%;
+}
