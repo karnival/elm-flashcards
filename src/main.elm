@@ -66,7 +66,7 @@ model =
         , ( "zi", "same as ź" )
         , ( "ż", "vision, tongue towards lower teeth and back" )
         ]
-    , displayed = ""
+    , displayed = "Click an entry to see its associated answer/pronunciation/solution."
     }
 
 
