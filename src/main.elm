@@ -3,71 +3,42 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http
+import Json.Decode as Decode
 
 
 main =
-    Html.beginnerProgram { model = model, view = view, update = update }
+    Html.program { view = view, update = update, init = init, subscriptions = subscriptions }
 
 
 
 -- MODEL
 
 
+type alias Card =
+    ( String, String )
+
+
+type alias CardDeck =
+    List Card
+
+
 type alias Model =
-    { entries : List ( String, String )
+    { entries : CardDeck
     , displayed : String
     }
 
 
 model : Model
 model =
-    { entries =
-        [ ( "a", "large" )
-        , ( "ą", "nasal o as own or French bon" )
-        , ( "b", "bed" )
-        , ( "c", "pits, Tsar, a bit like s-stuff with t before it" )
-        , ( "ć", "cheap (alveolo-palatal), tongue towards front and roof, a bit like s-stuff with t before it" )
-        , ( "ci", "same as ć" )
-        , ( "cz", "cheap, tongue towards lower teeth and back, a bit like s-stuff with t before it" )
-        , ( "ch", "hello" )
-        , ( "d", "dog" )
-        , ( "dz", "voiced 'c', like voids, like z series with d before it" )
-        , ( "dź", "voiced 'ć', like jeep, like z series with d before it" )
-        , ( "dzi", "same as dź" )
-        , ( "dż", "voiced 'cz', like djinn, like z series with d before it" )
-        , ( "e", "bed" )
-        , ( "ę", "nasal e, French pain" )
-        , ( "f", "fingers" )
-        , ( "g", "go" )
-        , ( "h", "hello, maybe a bit towards Scots loch" )
-        , ( "i", "meet" )
-        , ( "j", "yes" )
-        , ( "k", "king" )
-        , ( "l", "light" )
-        , ( "ł", "will" )
-        , ( "m", "men" )
-        , ( "n", "not" )
-        , ( "ń", "canyon (alveolo-palatal)" )
-        , ( "o", "British English long" )
-        , ( "ó", "boot" )
-        , ( "p", "spot" )
-        , ( "r", "trilled r" )
-        , ( "rz", "same as ż" )
-        , ( "s", "sea" )
-        , ( "ś", "sheep (alveolo-palatal), tongue towards front and roof" )
-        , ( "si", "same as ś" )
-        , ( "sz", "sheep (alveolo-palatal), tongue towards lower teeth and back" )
-        , ( "t", "start" )
-        , ( "u", "boot" )
-        , ( "w", "vox" )
-        , ( "y", "short i as in bit" )
-        , ( "z", "zoo" )
-        , ( "ź", "vision (alveolo-palatal), tongue towards front and roof" )
-        , ( "zi", "same as ź" )
-        , ( "ż", "vision, tongue towards lower teeth and back" )
-        ]
+    { entries = []
     , displayed = "Click an entry to see its associated answer/pronunciation/solution."
     }
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( model, getDeckData )
 
 
 
@@ -76,17 +47,37 @@ model =
 
 type Msg
     = Show String
+    | NewDeck (Result Http.Error CardDeck)
+    | ChangeDeck
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Show entry ->
-            { model
+            ( { model
                 | displayed = entry
+              }
+            , Cmd.none
+            )
 
-                --| displayed = model.entries
-            }
+        NewDeck (Ok deckData) ->
+            ( { model
+                | displayed = model.displayed
+                , entries = deckData
+              }
+            , Cmd.none
+            )
+
+        NewDeck (Err err) ->
+            ( { model
+                | displayed = toString err
+              }
+            , Cmd.none
+            )
+
+        ChangeDeck ->
+            ( model, getDeckData )
 
 
 
@@ -102,7 +93,45 @@ view model =
         ]
 
 
-viewEntry : ( String, String ) -> Html Msg
+viewEntry : Card -> Html Msg
 viewEntry entry =
     li [ onClick (Show (Tuple.second entry)) ]
         [ text (Tuple.first entry) ]
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+-- HTTP
+
+
+getDeckData : Cmd Msg
+getDeckData =
+    let
+        url =
+            "./polish-pronunciation.json"
+    in
+        Http.send NewDeck (Http.get url decodeDeckData)
+
+
+decodeDeckData : Decode.Decoder (List ( String, String ))
+decodeDeckData =
+    --Decode.decodeString (list (Decode.index 0 Decode.int)) Decode.string
+    Decode.list (arrayAsTuple2 Decode.string Decode.string)
+
+
+arrayAsTuple2 : Decode.Decoder a -> Decode.Decoder b -> Decode.Decoder ( a, b )
+arrayAsTuple2 a b =
+    Decode.index 0 a
+        |> Decode.andThen
+            (\aVal ->
+                Decode.index 1 b
+                    |> Decode.andThen (\bVal -> Decode.succeed ( aVal, bVal ))
+            )
