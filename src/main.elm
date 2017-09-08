@@ -26,19 +26,22 @@ type alias CardDeck =
 type alias Model =
     { entries : CardDeck
     , displayed : String
+    , decks : List String
     }
 
 
 model : Model
 model =
     { entries = []
-    , displayed = "Click an entry to see its associated answer/pronunciation/solution."
+    , displayed = initDisplayed
+    , decks = [ "polish-pronunciation", "polish-foods" ]
     }
 
+initDisplayed = "Click an entry to see its associated answer/pronunciation/solution."
 
 init : ( Model, Cmd Msg )
 init =
-    ( model, getDeckData )
+    ( model, getDeckData "polish-pronunciation" )
 
 
 
@@ -48,7 +51,7 @@ init =
 type Msg
     = Show String
     | NewDeck (Result Http.Error CardDeck)
-    | ChangeDeck
+    | ChangeDeck String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,7 +66,7 @@ update msg model =
 
         NewDeck (Ok deckData) ->
             ( { model
-                | displayed = model.displayed
+                | displayed = initDisplayed
                 , entries = deckData
               }
             , Cmd.none
@@ -76,8 +79,8 @@ update msg model =
             , Cmd.none
             )
 
-        ChangeDeck ->
-            ( model, getDeckData )
+        ChangeDeck deckString ->
+            ( model, getDeckData deckString )
 
 
 
@@ -88,6 +91,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "style.css" ] []
+        , ul [ id "decks" ] (List.map viewDeck model.decks)
         , ul [ id "entries" ] (List.map viewEntry model.entries)
         , div [ id "displayed" ] [ text model.displayed ]
         ]
@@ -98,7 +102,10 @@ viewEntry entry =
     li [ onClick (Show (Tuple.second entry)) ]
         [ text (Tuple.first entry) ]
 
-
+viewDeck : String -> Html Msg
+viewDeck deckString = 
+    li [ onClick (ChangeDeck deckString) ]
+        [ text deckString ]
 
 -- SUBSCRIPTIONS
 
@@ -112,18 +119,17 @@ subscriptions model =
 -- HTTP
 
 
-getDeckData : Cmd Msg
-getDeckData =
+getDeckData : String -> Cmd Msg
+getDeckData deckString =
     let
         url =
-            "./polish-pronunciation.json"
+            "./" ++ deckString ++ ".json"
     in
         Http.send NewDeck (Http.get url decodeDeckData)
 
 
 decodeDeckData : Decode.Decoder (List ( String, String ))
 decodeDeckData =
-    --Decode.decodeString (list (Decode.index 0 Decode.int)) Decode.string
     Decode.list (arrayAsTuple2 Decode.string Decode.string)
 
 
