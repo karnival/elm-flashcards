@@ -34,10 +34,13 @@ model : Model
 model =
     { entries = []
     , displayed = initDisplayed
-    , decks = [ "polish-pronunciation", "polish-foods" ]
+    , decks = [ "polish-pronunciation", "polish-foods", "does-not-exist" ]
     }
 
-initDisplayed = "Click an entry to see its associated answer/pronunciation/solution."
+
+initDisplayed =
+    "Click an entry to see its associated answer/pronunciation/solution."
+
 
 init : ( Model, Cmd Msg )
 init =
@@ -74,7 +77,7 @@ update msg model =
 
         NewDeck (Err err) ->
             ( { model
-                | displayed = toString err
+                | displayed = "Error loading new deck; staying on current deck."
               }
             , Cmd.none
             )
@@ -102,10 +105,13 @@ viewEntry entry =
     li [ onClick (Show (Tuple.second entry)) ]
         [ text (Tuple.first entry) ]
 
+
 viewDeck : String -> Html Msg
-viewDeck deckString = 
+viewDeck deckString =
     li [ onClick (ChangeDeck deckString) ]
         [ text deckString ]
+
+
 
 -- SUBSCRIPTIONS
 
