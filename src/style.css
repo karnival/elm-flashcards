@@ -1,6 +1,11 @@
 #entries {
     float: left;
-    max-width: 5em;
+    width: 5em;
+    height: 100vh; 
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+    list-style-type: none;
 }
 
 #displayed {
