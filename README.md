@@ -10,5 +10,5 @@ Currently at a very early stage.
 * ~~Add support for loading different flashcard decks.~~
 * Prettier and more functional stylesheet and page layout.
 * Fix page title etc to be more descriptive.
-* Deploy to GitHub pages or similar.
+* ~~Deploy to GitHub pages or similar.~~
 * Allow users to create/save/import decks.
